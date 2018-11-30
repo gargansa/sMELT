@@ -1,4 +1,3 @@
-
 import re
 from tkinter import *
 from tkinter import filedialog
@@ -17,8 +16,27 @@ effect_type.set("blend") # blend,effect
 unit_type = StringVar()
 unit_type.set("percent") # percent layerNumber
 percent_change_start = IntVar()
-percent_change_start.set(100)
-
+percent_change_start.set(0)
+percent_change_end = IntVar()
+percent_change_end.set(100)
+layer_change_start = IntVar()
+layer_change_start.set(0)
+layer_change_end = IntVar()
+layer_change_end.set(1000)
+blend_values = StringVar()
+blend_values.set("100,0,0,0")
+rotation_order = StringVar()
+rotation_order.set("abcd")
+extruder_start = IntVar()
+extruder_start.set(0)
+extruder_end = IntVar()
+extruder_end.set(100)
+change_rate = IntVar()
+change_rate.set(4)
+effect_modifier = StringVar()
+effect_modifier.set("normal")
+rate_modifier = StringVar()
+rate_modifier.set("normal")
 
 
 
@@ -57,12 +75,15 @@ class WindowActions:
             modified_gcode = ""
             if ";LAYER_COUNT:" in line:
                 modified_gcode += line + " ;Count Found\n"
+                modified_gcode += ";Debug Extruder Inputs " + str(extruder_inputs.get()) + "\n"
+                modified_gcode += ";Affected Tools " + str(affected_tool.get()) + "\n"
+
             elif ";LAYER:" in line:
                 modified_gcode += line + " ;Layer Found\n"
             elif "T" in line:
-                modified_gcode += line + ";Tool Found\n"
+                modified_gcode += line + ";Tool Found\n" 
             else:
-                modified_gcode += line + ";Everything\n"
+                modified_gcode += line + ";Everything" + "\n"
             WindowActions.data[index] = modified_gcode
             index += 1
         print("File has been modified")
@@ -130,7 +151,46 @@ class Window(Frame):
         Spinbox(root, from_=0, to=100, textvariable=percent_change_start).grid(row=r,column=1)
         Label(root,textvariable=percent_change_start, fg="DarkBlue", bg="White").grid(row=r, column=2)
         r+=1
-        
+        Label(root,text="Percent Change End", fg="DarkBlue", bg="White").grid(row=r, column=0)
+        Spinbox(root, from_=0, to=100, textvariable=percent_change_end).grid(row=r,column=1)
+        Label(root,textvariable=percent_change_end, fg="DarkBlue", bg="White").grid(row=r, column=2)
+        r+=1
+        Label(root,text="Layer Change Start", fg="DarkBlue", bg="White").grid(row=r, column=0)
+        Spinbox(root, from_=0, to=100, textvariable=layer_change_start).grid(row=r,column=1)
+        Label(root,textvariable=layer_change_start, fg="DarkBlue", bg="White").grid(row=r, column=2)
+        r+=1
+        Label(root,text="Layer Change End", fg="DarkBlue", bg="White").grid(row=r, column=0)
+        Spinbox(root, from_=0, to=100, textvariable=layer_change_end).grid(row=r,column=1)
+        Label(root,textvariable=layer_change_end, fg="DarkBlue", bg="White").grid(row=r, column=2)
+        r+=1
+        Label(root,text="Blend Values", fg="DarkBlue", bg="White").grid(row=r, column=0)
+        Entry(root,textvariable=blend_values).grid(row=r,column=1)
+        Label(root,textvariable=blend_values, fg="DarkBlue", bg="White").grid(row=r, column=2)
+        r+=1
+        Label(root,text="Rotation Order", fg="DarkBlue", bg="White").grid(row=r, column=0)
+        Entry(root,textvariable=rotation_order).grid(row=r,column=1)
+        Label(root,textvariable=rotation_order, fg="DarkBlue", bg="White").grid(row=r, column=2)
+        r+=1
+        Label(root,text="Extruder % Start Clamp", fg="DarkBlue", bg="White").grid(row=r, column=0)
+        Spinbox(root, from_=0, to=100, textvariable=extruder_start).grid(row=r,column=1)
+        Label(root,textvariable=extruder_start, fg="DarkBlue", bg="White").grid(row=r, column=2)
+        r+=1
+        Label(root,text="Extruder % End Clamp", fg="DarkBlue", bg="White").grid(row=r, column=0)
+        Spinbox(root, from_=0, to=100, textvariable=extruder_end).grid(row=r,column=1)
+        Label(root,textvariable=extruder_end, fg="DarkBlue", bg="White").grid(row=r, column=2)
+        r+=1
+        Label(root,text="Change Rate", fg="DarkBlue", bg="White").grid(row=r, column=0)
+        Spinbox(root, from_=0, to=100, textvariable=change_rate).grid(row=r,column=1)
+        Label(root,textvariable=change_rate, fg="DarkBlue", bg="White").grid(row=r, column=2)
+        r+=1
+        Label(root,text="Effect Modifier", fg="DarkBlue", bg="White").grid(row=r, column=0)
+        OptionMenu(root, effect_modifier, "normal", "wood", "random").grid(row=r,column=1)
+        Label(root,textvariable=effect_modifier, fg="DarkBlue", bg="White").grid(row=r, column=2)
+        r+=1
+        Label(root,text="Rate Modifier", fg="DarkBlue", bg="White").grid(row=r, column=0)
+        OptionMenu(root, rate_modifier, "normal", "random").grid(row=r,column=1)
+        Label(root,textvariable=rate_modifier, fg="DarkBlue", bg="White").grid(row=r, column=2)
+        r+=1
 
         r+=1
         button_open = Button(root, text="Open", command=WindowActions.open_file)

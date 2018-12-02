@@ -1,6 +1,14 @@
 import re
-from tkinter import *
-from tkinter import filedialog
+try:
+    # for Python2
+    from Tkinter import *
+    from Tkinter import filedialog
+except ImportError:
+    # for Python3
+    from tkinter import *
+    from tkinter import filedialog
+
+
 
 root = Tk()
 
@@ -8,7 +16,7 @@ root = Tk()
 layer_count = IntVar()
 layer_count.set(0)
 extruder_inputs = IntVar()
-extruder_inputs.set(2) # 2,3,4
+extruder_inputs.set(4) # 2,3,4
 affected_tool = StringVar()
 affected_tool.set("T0") # T0,T1,T2...
 effect_type = StringVar()
@@ -59,8 +67,17 @@ class WindowActions:
             if ";LAYER_COUNT:" in line:
                 # FINDING THE ACTUAL AFFECTED LAYERS
                 layer_count.set(float(line[(line.index(':') + 1): len(line)]))
-
-                modified_gcode += line
+            elif "T" in line:
+                #need to know what tools are in the code
+                #this would be an object that contains the T as a key and first and last layer affected
+                #to determine first it would check to see if they key exists if not then thats the first layer and create the key
+                #to determine last any time current T doesnt match previous T update previous T last value 
+                #So we need Tools Object
+                #Tools contains T0{start:-1,end:-1}
+                #create a way to display the used tools and their stats
+            elif ";Layer" in line:
+                #need to know what layers those tools start and end on
+                #use this to update the current layer
             else:
                 modified_gcode += line
 
@@ -70,15 +87,16 @@ class WindowActions:
 
     @staticmethod
     def modify_data():
+        base_input = [0] * extruder_inputs.get()
+        base_input[0] = 1
+
+
+
         index = 0
         for line in WindowActions.data:
             modified_gcode = ""
-            if ";LAYER_COUNT:" in line:
-                modified_gcode += line + " ;Count Found\n"
-                modified_gcode += ";Debug Extruder Inputs " + str(extruder_inputs.get()) + "\n"
-                modified_gcode += ";Affected Tools " + str(affected_tool.get()) + "\n"
-
-            elif ";LAYER:" in line:
+            
+            if ";LAYER:" in line:
                 modified_gcode += line + " ;Layer Found\n"
             elif "T" in line:
                 modified_gcode += line + ";Tool Found\n" 

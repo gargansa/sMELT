@@ -1,12 +1,6 @@
 import re
-try:
-    # for Python2
-    from Tkinter import *
-    from Tkinter import filedialog
-except ImportError:
-    # for Python3
-    from tkinter import *
-    from tkinter import filedialog
+from tkinter import filedialog
+from tkinter import *
 
 
 
@@ -46,11 +40,15 @@ effect_modifier.set("normal")
 rate_modifier = StringVar()
 rate_modifier.set("normal")
 
-
+class Tool:
+    def __init__(self, id, start, end):
+        self.id = id
+        self.start = start
+        self.end = end
+    
 
 class WindowActions:
     data = []
-
     @staticmethod
     def open_file():
         file = filedialog.askopenfilename(filetypes=(("GCODE files", "*.gcode"), ("All files", "*.*")))
@@ -62,12 +60,39 @@ class WindowActions:
     @staticmethod
     def load_data():
         index = 0
+        tools = []
+        current_layer = 0
+        # tools[]
+        tools.append(Tool(-1,-1,-1))
+        # tools.append(Tool(9,9,9))
+        
+        print("before")
+        t=0
+        for tool in tools:
+            print(tools[t].start)
+            t+=1
+        print("after")
+
         for line in WindowActions.data:
             modified_gcode = ""
             if ";LAYER_COUNT:" in line:
                 # FINDING THE ACTUAL AFFECTED LAYERS
                 layer_count.set(float(line[(line.index(':') + 1): len(line)]))
-            elif "T" in line:
+            elif "T" in line and ";" not in line and "M" not in line:
+                
+                current_t = int(line[(line.index('T') + 1): len(line)])
+                print("current_t"+str(current_t))
+                
+                
+                for t in range(0,len(tools)):# NOTE there is a bug that the last tool doesnt get its layer value updated
+                    if tools[t].id == current_t:
+                        tools[t].end = current_layer
+                        print("current_end" +str(tools[t].end))
+                        break
+                    elif t == len(tools)-1:
+                        tools.append(Tool(current_t,current_layer,current_layer))
+                        print("c"+str(current_t))
+
                 #need to know what tools are in the code
                 #this would be an object that contains the T as a key and first and last layer affected
                 #to determine first it would check to see if they key exists if not then thats the first layer and create the key
@@ -75,7 +100,8 @@ class WindowActions:
                 #So we need Tools Object
                 #Tools contains T0{start:-1,end:-1}
                 #create a way to display the used tools and their stats
-            elif ";Layer" in line:
+            elif ";LAYER" in line:
+                current_layer = (int(line[(line.index(':') + 1): len(line)]))
                 #need to know what layers those tools start and end on
                 #use this to update the current layer
             else:
@@ -84,13 +110,20 @@ class WindowActions:
             WindowActions.data[index] = modified_gcode
             index += 1
         print("Data within file has been loaded")
+        #print out the final tools values
+        j=0
+        for tool in tools:
+            print("final values")
+            print(tools[j].id)
+            print(tools[j].start)
+            print(tools[j].end)
+            j+=1
+            
 
     @staticmethod
     def modify_data():
         base_input = [0] * extruder_inputs.get()
         base_input[0] = 1
-
-
 
         index = 0
         for line in WindowActions.data:

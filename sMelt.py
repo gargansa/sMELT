@@ -51,7 +51,7 @@ class Tool:
 class Actions:
     data = []
     tools = []
-    current_layer = -1
+    current_layer = 0
 
     @staticmethod
     def open_file():
@@ -69,50 +69,35 @@ class Actions:
         # current_layer = -1
 
         for line in Actions.data:
-            modified_gcode = ""
             if ";LAYER_COUNT:" in line:
                 # FINDING THE ACTUAL AFFECTED LAYERS
                 layer_count.set(float(line[(line.index(':') + 1): len(line)]))
             elif "T" in line and ";" not in line and "M" not in line:
                 
-                current_t = int(line[(line.index('T') + 1): len(line)])
+                current_t = int(line[(line.index('T') + 1): len(line)]) #update current tool
                 
-                
-                #need to know what tools are in the code
-                #this would be an object that contains the T as a key and first and last layer affected
-                #to determine first it would check to see if they key exists if not then thats the first layer and create the key
-                #to determine last any time current T doesnt match previous T update previous T last value 
-                #So we need Tools Object
-                #Tools contains T0{start:-1,end:-1}
-                #create a way to display the used tools and their stats
             elif ";LAYER" in line:
-                current_layer = (int(line[(line.index(':') + 1): len(line)]))
+                Actions.current_layer = (int(line[(line.index(':') + 1): len(line)])) # update current layer
 
                 if len(Actions.tools) == 0:
-                    Actions.tools.append(Tool(current_t,current_layer,current_layer))
+                    Actions.tools.append(Tool(current_t,Actions.current_layer,Actions.current_layer))
 
-                for t in range(0,len(Actions.tools)):# NOTE there is a bug that the last tool doesnt get its layer value updated
-                    if Actions.tools[t].id == current_t:
-                        Actions.tools[t].end = current_layer
+                for t, tool in enumerate(Actions.tools):# NOTE there is maybe a but that tool zero doesnt get updated
+                    if tool.id == current_t:
+                        tool.end = Actions.current_layer
                         break
-                    elif t == len(Actions.tools)-1:
-                        Actions.tools.append(Tool(current_t,current_layer,current_layer))
-                        print("thisOne" +str(line)+ "  " + str(current_layer))
+                    elif t == len(Actions.tools)-1: #if at the end of options and still hasnt been found create one
+                        Actions.tools.append(Tool(current_t,Actions.current_layer,Actions.current_layer))
                 #need to know what layers those tools start and end on
                 #use this to update the current layer
-            else:
-                modified_gcode += line
-
-            Actions.data[index] = modified_gcode
-            index += 1
+            
         print("Data within file has been loaded")
+
         #print out the final tools values
-        j=0
         tools_to_display = "Tools \n"
-        for tool in Actions.tools:
-            tools_to_display += ("T") + str(Actions.tools[j].id) +(" Start:")+ str(Actions.tools[j].start) +(" End:")+ str(Actions.tools[j].end) +(" ")
+        for tool in Actions.tools: # NOTE (for i, tool in enumerate(Actions.tools):)
+            tools_to_display += ("T") + str(tool.id) +(" Start:")+ str(tool.start) +(" End:")+ str(tool.end) +(" ")
             tools_to_display += "\n"
-            j+=1
         tool_display.set(tools_to_display)
             
 

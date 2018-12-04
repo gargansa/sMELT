@@ -8,6 +8,8 @@ root = Tk()
 # initiate global variables for displaying info
 layer_count = IntVar()
 layer_count.set(0)
+tool_display = StringVar()
+tool_display.set("\n\n\n\n\n")
 extruder_inputs = IntVar()
 extruder_inputs.set(4) # 2,3,4
 affected_tool = StringVar()
@@ -106,12 +108,12 @@ class Actions:
         print("Data within file has been loaded")
         #print out the final tools values
         j=0
+        tools_to_display = "Tools \n"
         for tool in Actions.tools:
-            print("final values")
-            print(Actions.tools[j].id)
-            print(Actions.tools[j].start)
-            print(Actions.tools[j].end)
+            tools_to_display += ("T") + str(Actions.tools[j].id) +(" Start:")+ str(Actions.tools[j].start) +(" End:")+ str(Actions.tools[j].end) +(" ")
+            tools_to_display += "\n"
             j+=1
+        tool_display.set(tools_to_display)
             
 
     @staticmethod
@@ -175,7 +177,11 @@ class Window(Frame):
         # Display Info
         Label(root, text="Layer Count", fg="DarkGreen", bg="White").grid(row=r, column=0)
         Label(root, textvariable=layer_count, fg="DarkGreen", bg="White").grid(row=r, column=1)
-        r+=1
+        
+        r+=5
+        Label(root, textvariable=tool_display, fg="DarkGreen", bg="White").grid(row=r, column=4)
+        r+=5
+
         Label(root,text="Extruder Inputs", fg="DarkBlue", bg="White").grid(row=r, column=0)
         OptionMenu(root, extruder_inputs, "2", "3", "4").grid(row=r,column=1)
         Label(root,textvariable=extruder_inputs, fg="DarkBlue", bg="White").grid(row=r, column=2)
@@ -183,6 +189,8 @@ class Window(Frame):
         Label(root,text="Affected Tool", fg="DarkBlue", bg="White").grid(row=r, column=0)
         OptionMenu(root, affected_tool, "T0", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8").grid(row=r,column=1)
         Label(root,textvariable=affected_tool, fg="DarkBlue", bg="White").grid(row=r, column=2)
+
+        
         r+=1
         Label(root,text="Effect Type", fg="DarkBlue", bg="White").grid(row=r, column=0)
         OptionMenu(root, effect_type, "blend", "effect").grid(row=r,column=1)
@@ -259,7 +267,7 @@ class Window(Frame):
 
 # The window info
 root.title("sMELT (standalone Multi Extruder Layering Tool)")
-root.geometry("800x800")
+root.geometry("1200x800")
 app = Window(root)
 root.mainloop()
 

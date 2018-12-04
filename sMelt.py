@@ -46,23 +46,27 @@ class Tool:
         self.end = end
     
 
-class WindowActions:
+class Actions:
     data = []
+    tools = []
+    current_layer = -1
+
     @staticmethod
     def open_file():
+        Actions.tools=[] #reset tools
         file = filedialog.askopenfilename(filetypes=(("GCODE files", "*.gcode"), ("All files", "*.*")))
         with open(file, 'r', encoding='utf-8') as the_file:
-            WindowActions.data = the_file.read().strip().split("\n")
-        WindowActions.load_data()
+            Actions.data = the_file.read().strip().split("\n")
+        Actions.load_data()
         print("File has been opened")
 
     @staticmethod
     def load_data():
         index = 0
-        tools = []
-        current_layer = -1
+        # tools = []
+        # current_layer = -1
 
-        for line in WindowActions.data:
+        for line in Actions.data:
             modified_gcode = ""
             if ";LAYER_COUNT:" in line:
                 # FINDING THE ACTUAL AFFECTED LAYERS
@@ -72,17 +76,6 @@ class WindowActions:
                 current_t = int(line[(line.index('T') + 1): len(line)])
                 
                 
-                if len(tools) == 0:
-                    tools.append(Tool(current_t,current_layer,current_layer))
-
-                for t in range(0,len(tools)):# NOTE there is a bug that the last tool doesnt get its layer value updated
-                    if tools[t].id == current_t:
-                        tools[t].end = current_layer
-                        break
-                    elif t == len(tools)-1:
-                        tools.append(Tool(current_t,current_layer,current_layer))
-                        print("thisOne" +str(line)+ "  " + str(current_layer))
-
                 #need to know what tools are in the code
                 #this would be an object that contains the T as a key and first and last layer affected
                 #to determine first it would check to see if they key exists if not then thats the first layer and create the key
@@ -92,21 +85,32 @@ class WindowActions:
                 #create a way to display the used tools and their stats
             elif ";LAYER" in line:
                 current_layer = (int(line[(line.index(':') + 1): len(line)]))
+
+                if len(Actions.tools) == 0:
+                    Actions.tools.append(Tool(current_t,current_layer,current_layer))
+
+                for t in range(0,len(Actions.tools)):# NOTE there is a bug that the last tool doesnt get its layer value updated
+                    if Actions.tools[t].id == current_t:
+                        Actions.tools[t].end = current_layer
+                        break
+                    elif t == len(Actions.tools)-1:
+                        Actions.tools.append(Tool(current_t,current_layer,current_layer))
+                        print("thisOne" +str(line)+ "  " + str(current_layer))
                 #need to know what layers those tools start and end on
                 #use this to update the current layer
             else:
                 modified_gcode += line
 
-            WindowActions.data[index] = modified_gcode
+            Actions.data[index] = modified_gcode
             index += 1
         print("Data within file has been loaded")
         #print out the final tools values
         j=0
-        for tool in tools:
+        for tool in Actions.tools:
             print("final values")
-            print(tools[j].id)
-            print(tools[j].start)
-            print(tools[j].end)
+            print(Actions.tools[j].id)
+            print(Actions.tools[j].start)
+            print(Actions.tools[j].end)
             j+=1
             
 
@@ -116,7 +120,7 @@ class WindowActions:
         base_input[0] = 1
 
         index = 0
-        for line in WindowActions.data:
+        for line in Actions.data:
             modified_gcode = ""
             
             if ";LAYER:" in line:
@@ -125,7 +129,7 @@ class WindowActions:
                 modified_gcode += line + ";Tool Found\n" 
             else:
                 modified_gcode += line + ";Everything" + "\n"
-            WindowActions.data[index] = modified_gcode
+            Actions.data[index] = modified_gcode
             index += 1
         print("File has been modified")
         
@@ -135,7 +139,7 @@ class WindowActions:
         file = filedialog.asksaveasfile(mode='w', defaultextension=".gcode")
         if file is None:
             return
-        for item in WindowActions.data:
+        for item in Actions.data:
             file.write("%s" % item)
 
         file.close()
@@ -159,13 +163,13 @@ class Window(Frame):
 
         file = Menu(menu)
         menu.add_cascade(label="File", menu=file)
-        file.add_command(label="Open", command=WindowActions.open_file)
-        file.add_command(label="Save", command=WindowActions.save_file)
+        file.add_command(label="Open", command=Actions.open_file)
+        file.add_command(label="Save", command=Actions.save_file)
         file.add_command(label="Exit", command=exit)
 
         options = Menu(menu)
         menu.add_cascade(label="Options", menu=options)
-        options.add_command(label="Modify", command=WindowActions.modify_data)
+        options.add_command(label="Modify", command=Actions.modify_data)
 
         r=0
         # Display Info
@@ -234,13 +238,13 @@ class Window(Frame):
         r+=1
 
         r+=1
-        button_open = Button(root, text="Open", command=WindowActions.open_file)
+        button_open = Button(root, text="Open", command=Actions.open_file)
         button_open.grid(row=r,column=0)
         r+=1
-        button_modify = Button(root, text="Modify", command=WindowActions.modify_data)
+        button_modify = Button(root, text="Modify", command=Actions.modify_data)
         button_modify.grid(row=r,column=0)
         r+=1
-        button_save = Button(root, text="Save", command=WindowActions.save_file)
+        button_save = Button(root, text="Save", command=Actions.save_file)
         button_save.grid(row=r,column=0)
         
 

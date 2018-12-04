@@ -3,7 +3,6 @@ from tkinter import filedialog
 from tkinter import *
 
 
-
 root = Tk()
 
 # initiate global variables for displaying info
@@ -61,17 +60,7 @@ class WindowActions:
     def load_data():
         index = 0
         tools = []
-        current_layer = 0
-        # tools[]
-        tools.append(Tool(-1,-1,-1))
-        # tools.append(Tool(9,9,9))
-        
-        print("before")
-        t=0
-        for tool in tools:
-            print(tools[t].start)
-            t+=1
-        print("after")
+        current_layer = -1
 
         for line in WindowActions.data:
             modified_gcode = ""
@@ -81,17 +70,18 @@ class WindowActions:
             elif "T" in line and ";" not in line and "M" not in line:
                 
                 current_t = int(line[(line.index('T') + 1): len(line)])
-                print("current_t"+str(current_t))
                 
                 
+                if len(tools) == 0:
+                    tools.append(Tool(current_t,current_layer,current_layer))
+
                 for t in range(0,len(tools)):# NOTE there is a bug that the last tool doesnt get its layer value updated
                     if tools[t].id == current_t:
                         tools[t].end = current_layer
-                        print("current_end" +str(tools[t].end))
                         break
                     elif t == len(tools)-1:
                         tools.append(Tool(current_t,current_layer,current_layer))
-                        print("c"+str(current_t))
+                        print("thisOne" +str(line)+ "  " + str(current_layer))
 
                 #need to know what tools are in the code
                 #this would be an object that contains the T as a key and first and last layer affected
